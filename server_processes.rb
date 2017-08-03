@@ -1,5 +1,5 @@
 require 'socket'
-require './lib/processes'
+require './lib/lib'
 
 Thread.abort_on_exception = true
 
@@ -13,16 +13,17 @@ master_reader, master_writer = IO.pipe
 write_incoming_messages_to_child_processes(master_reader, client_writers)
 
 # Run a loop that waits for incoming connections to the server and
-# forks a child process for every connection.
+# forks a child process s every connection.
 loop do
   while socket = server.accept
-
+    # puts "A new connection coming\n #{socket.inspect}"
     # Create a client reader and writer so that the master process can
     # write messages back to us
     client_reader, client_writer = IO.pipe
 
     # Put the client writer on the list of writers so the master process can write to them
     client_writers.push(client_writer)
+    # write_incoming_messages_to_child_processes(master_reader, client_writers)
 
     # Fork child process, everything in the fork block only runs in the child process
     fork do

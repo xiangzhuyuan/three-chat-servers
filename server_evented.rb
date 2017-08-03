@@ -1,5 +1,5 @@
 require 'socket'
-require './lib/evented'
+require './lib/lib'
 
 Thread.abort_on_exception = true
 
@@ -8,7 +8,7 @@ puts "Starting server on port 2000 with pid #{Process.pid}"
 server = TCPServer.open(2000)
 
 $client_handlers = {}
-$messages = []
+$messages        = []
 
 def create_client_handler(nickname, socket)
   Fiber.new do
@@ -32,13 +32,13 @@ def create_client_handler(nickname, socket)
 
         # All good, add it to the list to write
         $messages.push(
-          :time => Time.now,
+          :time     => Time.now,
           :nickname => nickname,
-          :text => incoming
+          :text     => incoming
         )
       elsif state == :writable
         # Write messages to the socket
-        get_messages_to_send(last_write, nickname, $messages).each do |message|
+        get_messages_to_send(nickname, $messages, last_write).each do |message|
           socket.puts "#{message[:nickname]}: #{message[:text]}"
         end
 
@@ -52,8 +52,8 @@ end
 loop do
   # Step 1: See if we have any new incoming connections
   begin
-    socket = server.accept_nonblock
-    nickname = socket.gets.chomp
+    socket                   = server.accept_nonblock
+    nickname                 = socket.gets.chomp
     $client_handlers[socket] = create_client_handler(nickname, socket)
     puts "Accepted connection from #{nickname}"
   rescue IO::WaitReadable, Errno::EINTR

@@ -1,5 +1,5 @@
 require 'socket'
-require './lib/threads'
+require './lib/lib'
 
 Thread.abort_on_exception = true
 
